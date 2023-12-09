@@ -1,0 +1,20 @@
+{
+    "type": "MOD",
+    "title": "Stent",
+    "name": "stent",
+    "short_description": "",
+    "dev_state": "WIP",
+    "tags": [
+        "library"
+    ],
+    "content_warnings": [],
+    "license": "AGPL-3.0-or-later",
+    "media_license": "AGPL-3.0-or-later",
+    "long_description": "",
+    "repo": "https://github.com/AFCMS/stent",
+    "website": null,
+    "issue_tracker": "https://github.com/AFCMS/stent/issues",
+    "forums": null,
+    "video_url": null,
+    "donate_url": null
+}
