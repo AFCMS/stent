@@ -26,4 +26,4 @@ The main menu needs to list all arenas included in arenas_data, and provide a bu
 
 Override `stent.start_location` (a position vector) to change the place that players spawn. When players spawn, they will be stuck to a slowly-revolving entity. Use the spawn schematic to create a spawn environment for the main menu.
 
-Override `stent.place_spawn_schematic()` to change the schematic that gets placed and where/how it gets placed. This is called once on the first joinplayer after server start.
+Override `stent.on_load()` to change the schematic that gets placed and where/how it gets placed. This is called once on the first joinplayer after server start.
