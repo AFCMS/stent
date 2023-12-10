@@ -1,6 +1,7 @@
 stent = {}
 stent.start_location = vector.new(0,0,0) -- to override in mods.
 --  Players are placed here when they join.
+stent.on_load = function() end
 
 
 local storage = minetest.get_mod_storage()
@@ -65,6 +66,7 @@ arena_lib.register_entrance_type("stent", "formspec_entrace", {
     -- additional actions to perform when the server starts. Useful for nodes,
     -- since they don't have an on_activate callback, contrary to entities
     on_load = function (mod, arena)
+        stent.on_load()
         stent.refresh_formspecs()
     end,
 
@@ -94,7 +96,7 @@ arena_lib.register_entrance_type("stent", "formspec_entrace", {
     end,
 })
 
-local saved_arenas_data = {}
+stent.saved_arenas_data = {}
 
 stent.refresh_formspecs = function ()
 
@@ -123,7 +125,7 @@ stent.refresh_formspecs = function ()
     end
 
     -- save this so if new players join we dont have to refresh everyone's formspecs
-    saved_arenas_data = arenas_data
+    stent.saved_arenas_data = arenas_data
 
     -- next, call the function to build the formspec, passing the data
     for _, player in pairs(minetest.get_connected_players()) do
@@ -145,11 +147,47 @@ local function do_first_join_setup()
     end
 end
 
--- implement a basic main menu formspec for testing purposes
+
+-- Placeholder Main Menu Formspec
+local function fs_tree_creator(arenas_data)
+    local listelems = {}
+    for i,arena_data in ipairs(arenas_data) do
+        local str = "Queueing"
+        if arena_data.in_loading then
+            str = "Loading"
+        end
+        if arena_data.in_game then
+            str = "In Progress"
+        end
+        if arena_data.in_celebration then
+            str = "Finishing"
+        end
+        if arena_data.enabled == false then
+            str = "Disabled"
+        end
+        local entry = arena_data.name .. "     " .. arena_data.players_inside .. "/" .. arena_data.max_players .. "     " .. str
+        table.insert(listelems,entry)
+    end
+    local tree = {
+        { type = "size", w = 10.5, h = 11, fixed_size = false },
+        { type = "image", x = 0, y = 0, w = 10.5, h = 2.6, texture_name = "stent_game_header.png" },
+        { type = "button", x = 0, y = 3, w = 10.5, h = 0.8, name = "btn1", label = "Available Arenas" },
+        { type = "textlist",
+            x = 0, y = 3.8, w = 10.5, h = 3,
+            name = "textlist1",
+            listelems = listelems,
+            selected_idx = 1,
+            transparent = true},
+        { type = "button", x = .3, y = 7.2, w = 3.1, h = 0.8, name = "join", label = "Join Queue" },
+        { type = "button", x = 3.7, y = 7.2, w = 3.3, h = 0.8, name = "leave", label = "Leave Queue" },
+        { type = "button", x = 7.1, y = 7.2, w = 3.1, h = 0.8, name = "spectate", label = "Spectate" },
+    }
+    return tree
+end
 
 function stent.build_mainmenu_formspec(p_name, arenas_data)
-    fs = ""
-    fs = fs .. ""
+    local tree = fs_tree_creator(arenas_data)
+
 end
 
 
@@ -164,7 +202,7 @@ local function set_main_menu(p_name)
     local player = minetest.get_player_by_name(p_name)
     old_inventory_formspecs[p_name] = player:get_inventory_formspec()
     if player then 
-        local fs = stent.build_mainmenu_formspec(p_name,saved_arenas_data)
+        local fs = stent.build_mainmenu_formspec(p_name,stent.saved_arenas_data)
         player:set_inventory_formspec(fs) 
         minetest.show_formspec(p_name, "", fs)
     end
@@ -206,8 +244,6 @@ minetest.register_on_joinplayer(function(player, last_login)
     player:set_attach()
     set_main_menu(p_name)
 end)
-
-
 
 
 -- spawn-attachment entity
