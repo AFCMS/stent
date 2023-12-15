@@ -37,8 +37,6 @@ function stent.set_arena_props(mod_name, arena_name, props)
     if props.lighting then
         arena_lib.set_lighting("", mod_name, arena_name, props.lighting)
     end
-    -- set the return point to the spawn point:
-    props.custom_return_point = stent.start_location
 
     -- set arena properties:
     for prop_name,val in pairs(props) do
@@ -52,6 +50,7 @@ function stent.set_arena_props(mod_name, arena_name, props)
             arena_lib.change_arena_property("",  mod_name, arena_name, prop_name, val)
         end
     end
+    arena_lib.mods[mod_name].settings.return_point = stent.start_location
     arena_lib.enable_arena("", mod_name, arena_name, false)
 end
 
