@@ -23,6 +23,11 @@ and for each arena,
 - arena pos1 and pos2 which define arena bounds, if applicable
 - any other positions your specific minigame requires
 
+Hint: if you want to use arena_lib to make collecting the arena info easier, here is a worldedit command that will send you a formspec with a printout of all arena properties. Use the arena_lib editor to create arenas and set their properties, then send this command (change mod_name and p_name to your minigame and player name):
+
+```//lua local mod_name = "balloon_bop" local p_name = "singleplayer" local text = dump(arena_lib.mods[mod_name].arenas) minetest.show_formspec(p_name, "dump", "formspec_version[6]size[10.5,11]textarea[1.4,4.3;7.7,2;;Text Dump;"..text.."]")
+```
+
 Now export the world as a mod:
 set worldedit pos 1 and worldedit pos2 (`//pos1`, `//pos2`) to encompass the entirety of your builds
 send the modgen command `/export`
@@ -42,7 +47,7 @@ stent.start_location = vector.new(7,-10,0)
 ```
 
 
-## 2. Create, setup and enable arenas in on_mods_loaded
+## 2. Create, and setup arenas in on_mods_loaded
 
 There are three api functions to know about:
 
@@ -71,6 +76,13 @@ props.spawn_points = {
 ``` 
 Include any other properties your minigame requires.
 
+You can also choose to set weather and lighting:
+`props.weather_condition`: arena_lib weather particles table; see the documentation for `particles` in:
+https://gitlab.com/zughy-friends-minetest/arena_lib/-/blob/master/DOCS.md?ref_type=heads#22210-weather
+`props.lighting`: arena_lib lighting table; see the documentation for `light_table` in: 
+https://gitlab.com/zughy-friends-minetest/arena_lib/-/blob/master/DOCS.md?ref_type=heads#22210-weather
+
+
 Example:
 
 ```lua
@@ -93,13 +105,37 @@ stent.set_arena_props("balloon_bop", "redBox", {
 })
 ```
 
-To set the start time of an arena:
 
-`stent.set_load_time(mod_name,time)`
+Putting it all together Example:
 
-Example:
 ```lua
-stent.set_load_time("balloon_bop",1) -- for one second start time
+minetest.register_on_mods_loaded(function ()
+    -- create an arena:
+    if not (arena_lib.get_arena_by_name(mod_name,"redBox")) then
+        stent.create_arena(mod_name, "redBox")
+    end
+
+    -- set properties of an arena:
+    stent.set_arena_props(mod_name, "redBox", {
+
+        -- required properties:
+        min_players = 1,
+        max_players = 2,
+        pos1 = vector.new(77,-16,7),
+        pos2 = vector.new(62,14,-8),
+        spawn_points = {
+            vector.new(69,-7,1),
+            vector.new(72,-7,0),
+        },
+
+        -- minigame specific properties:
+        balloon_spawner = vector.new(69,4,-1),
+        starting_lives = 3,
+        spawner_range = 2.5,
+        player_die_level = -20,
+        arena_radius = 15,
+    })
+end)
 ```
 
 ## 3. Create a main menu for your game
@@ -152,9 +188,7 @@ init.lua >
 stent.start_location = vector.new(7,-10,0)
 -- we load the map using modgen (see modgen_mod_export)
 local mod_name = "balloon_bop"
-
 minetest.register_on_mods_loaded(function ()
-
     -- create an arena:
     if not (arena_lib.get_arena_by_name(mod_name,"redBox")) then
         stent.create_arena(mod_name, "redBox")
@@ -180,8 +214,6 @@ minetest.register_on_mods_loaded(function ()
         player_die_level = -20,
         arena_radius = 15,
     })
-    -- enable an arena:
-    stent.enable_arena(mod_name,"redBox")
 end)
 
 

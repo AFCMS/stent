@@ -13,9 +13,6 @@ local get_next_uid = function ()
     return uid
 end
 
-stent.set_load_time = function(mod_name, time)
-    arena_lib.mods[mod_name].load_time = time
-end
 
 function stent.create_arena(mod_name, arena_name)
     arena_lib.create_arena("", mod_name, arena_name)
@@ -24,25 +21,37 @@ function stent.create_arena(mod_name, arena_name)
 end
 
 function stent.set_arena_props(mod_name, arena_name, props)
+    local arena_id, arena = arena_lib.get_arena_by_name(mod_name,arena_name)
+    if arena.enabled then
+        arena_lib.disable_arena("", mod_name, arena_name)
+    end
     if props.pos1 and props.pos2 then
-        arena_lib.set_region("", mod_name, arena_name, pos1, pos2)
+        arena_lib.set_region("", mod_name, arena_name, props.pos1, props.pos2)
     end
     if props.min_players and props.max_players then
-        arena_lib.change_players_amount("sender", mod_name, arena_name, min_players, max_players)
+        arena_lib.change_players_amount("sender", mod_name, arena_name, props.min_players, props.max_players)
+    end
+    if props.weather_condition then
+        arena_lib.set_weather_condition("", mod_name, arena_name, props.weather_condition)
+    end
+    if props.lighting then
+        arena_lib.set_lighting("", mod_name, arena_name, props.lighting)
     end
     -- set the return point to the spawn point:
     props.custom_return_point = stent.start_location
 
     -- set arena properties:
     for prop_name,val in pairs(props) do
-        if prop_name ~= "pos1" and prop_name ~= "pos2" and prop_name ~= "min_players" and prop_name ~= "max_players" then
+        if prop_name ~= "lighting" and 
+            prop_name ~= "weather_condition" and 
+            prop_name ~= "pos1" and 
+            prop_name ~= "pos2" and 
+            prop_name ~= "min_players" and 
+            prop_name ~= "max_players" then
+
             arena_lib.change_arena_property("",  mod_name, arena_name, prop_name, val)
         end
     end
-    
-end
-
-function stent.enable_arena(mod_name,arena_name)
     arena_lib.enable_arena("", mod_name, arena_name, false)
 end
 
