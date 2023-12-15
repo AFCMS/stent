@@ -25,7 +25,8 @@ and for each arena,
 
 Hint: if you want to use arena_lib to make collecting the arena info easier, here is a worldedit command that will send you a formspec with a printout of all arena properties. Use the arena_lib editor to create arenas and set their properties, then send this command (change mod_name and p_name to your minigame and player name):
 
-```//lua local mod_name = "balloon_bop" local p_name = "singleplayer" local text = dump(arena_lib.mods[mod_name].arenas) minetest.show_formspec(p_name, "dump", "formspec_version[6]size[10.5,11]textarea[1.4,4.3;7.7,2;;Text Dump;"..text.."]")
+```
+//lua local mod_name = "balloon_bop" local p_name = "singleplayer" local text = dump(arena_lib.mods[mod_name].arenas) minetest.show_formspec(p_name, "dump", "formspec_version[6]size[10.5,11]textarea[1.4,4.3;7.7,2;;Text Dump;"..text.."]")
 ```
 
 Now export the world as a mod:
