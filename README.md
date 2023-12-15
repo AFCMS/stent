@@ -1,4 +1,8 @@
-# stent
+# Stent
+
+> [!NOTE]
+> Code has been build by [MisterE123](https://github.com/MisterE123) to help me with the [2023 Minetest Game Jam](https://jam.minetest.net)
+
 Adds a new arena entrance for arena_lib that can be implemented in a formspec. 
 
 An example main menu is included.
