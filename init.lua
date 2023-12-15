@@ -1,7 +1,7 @@
 stent = {}
 stent.start_location = vector.new(0,0,0) -- to override in mods.
 --  Players are placed here when they join.
-stent.on_load = function() end
+stent.place_spawn_schematic = function() end
 
 
 local storage = minetest.get_mod_storage()
@@ -13,7 +13,38 @@ local get_next_uid = function ()
     return uid
 end
 
+stent.set_load_time = function(mod_name, time)
+    arena_lib.mods[mod_name].load_time = time
+end
 
+function stent.create_arena(mod_name, arena_name)
+    arena_lib.create_arena("", mod_name, arena_name)
+    arena_lib.set_entrance_type("", mod_name, arena_name, "formspec_entrace")
+    arena_lib.set_entrance("", mod_name, arena_name, "add")
+end
+
+function stent.set_arena_props(mod_name, arena_name, props)
+    if props.pos1 and props.pos2 then
+        arena_lib.set_region("", mod_name, arena_name, pos1, pos2)
+    end
+    if props.min_players and props.max_players then
+        arena_lib.change_players_amount("sender", mod_name, arena_name, min_players, max_players)
+    end
+    -- set the return point to the spawn point:
+    props.custom_return_point = stent.start_location
+
+    -- set arena properties:
+    for prop_name,val in pairs(props) do
+        if prop_name ~= "pos1" and prop_name ~= "pos2" and prop_name ~= "min_players" and prop_name ~= "max_players" then
+            arena_lib.change_arena_property("",  mod_name, arena_name, prop_name, val)
+        end
+    end
+    
+end
+
+function stent.enable_arena(mod_name,arena_name)
+    arena_lib.enable_arena("", mod_name, arena_name, false)
+end
 
 
 -- Arena lib entrance registration
@@ -30,18 +61,8 @@ arena_lib.register_entrance_type("stent", "formspec_entrace", {
     -- to run entrance-specific checks and return the value that arena_lib will
     -- then store as an entrance
 
-    on_add = function (sender, mod, arena, ...)
+    on_add = function (sender, mod, arena)
         local uid = get_next_uid()
-        -- table.insert(stent.entrances, {
-        --     entrance_uid = uid,
-        --     players_inside = #arena.players,
-        --     max_players = arena.max_players,
-        --     in_queue = arena.in_queue,
-        --     in_loading = arena.in_loading,
-        --     in_game = arena.in_game,
-        --     in_celebration = arena.in_celebration,
-        --     enabled = arena.enabled,
-        -- })
         return uid
     end,
 
@@ -51,7 +72,7 @@ arena_lib.register_entrance_type("stent", "formspec_entrace", {
     -- entrance-specific checks.
 
     on_remove = function (mod, arena)
-        
+        return
     end,
     
     -- what should happen to each entrance when the status of the associated
@@ -66,37 +87,42 @@ arena_lib.register_entrance_type("stent", "formspec_entrace", {
     -- additional actions to perform when the server starts. Useful for nodes,
     -- since they don't have an on_activate callback, contrary to entities
     on_load = function (mod, arena)
-        stent.on_load()
-        stent.refresh_formspecs()
+        -- stent.on_load()
+        -- stent.refresh_formspecs()
     end,
 
-    -- editor_settings = {
-    --     -- the name of the item representing the section
-    --     name =,
-    --     -- the image of the item representing the section
-    --     icon =,
-    --     -- the description of the section, shown in the semi-transparent black
-    --     -- bar above the hotbar
-    --     description =,
-    --     -- must return a table containing the name of the items that shall be
-    --     -- put into the editor section once opened. Max 6 entries. Contrary to a
-    --     -- table, the function allows to dynamically change the given items
-    --     -- according to external factors (e.g. a specific arena property)
-    --     items =,
-    --     -- called when entering the editor. Useful to reset entrance properties
-    --     -- bound to p_name, as it's the only way the player has to know that the
-    --     -- editor has been entered by someone
-    --     on_enter = function (p_name, mod, arena)
-            
-    --     end,
-    -- },
+    editor_settings = {
+        -- the name of the item representing the section
+        name = "none",
+        -- the image of the item representing the section
+        icon = "blank.png",
+        -- the description of the section, shown in the semi-transparent black
+        -- bar above the hotbar
+        description = "No settings for Formspec Entrance",
+        -- must return a table containing the name of the items that shall be
+        -- put into the editor section once opened. Max 6 entries. Contrary to a
+        -- table, the function allows to dynamically change the given items
+        -- according to external factors (e.g. a specific arena property)
+        items = function() return {} end,
+        -- called when entering the editor. Useful to reset entrance properties
+        -- bound to p_name, as it's the only way the player has to know that the
+        -- editor has been entered by someone
+        on_enter = function (p_name, mod, arena)
+            return
+        end,
+    },
     -- what the debug log should print (via arena_lib.print_arena_info())
     debug_output = function (entrace)
         return "debug"
     end,
 })
 
+
 stent.saved_arenas_data = {}
+
+function stent.build_mainmenu_formspec(p_name, arenas_data) 
+    return ""
+end
 
 stent.refresh_formspecs = function ()
 
@@ -131,63 +157,11 @@ stent.refresh_formspecs = function ()
     for _, player in pairs(minetest.get_connected_players()) do
         local p_name = player:get_player_name()
         if not(arena_lib.is_player_in_arena(p_name)) then
-            stent.build_mainmenu_formspec(p_name, arenas_data)
+            local fs = stent.build_mainmenu_formspec(p_name, arenas_data)
+            player:set_inventory_formspec(fs)
+            minetest.show_formspec(p_name,"",fs)
         end
     end
-end
-
-
-
-
-local first_join = true
-local function do_first_join_setup()
-    if first_join then
-        first_join = false
-        stent.place_spawn_schematic()
-    end
-end
-
-
--- Placeholder Main Menu Formspec
-local function fs_tree_creator(arenas_data)
-    local listelems = {}
-    for i,arena_data in ipairs(arenas_data) do
-        local str = "Queueing"
-        if arena_data.in_loading then
-            str = "Loading"
-        end
-        if arena_data.in_game then
-            str = "In Progress"
-        end
-        if arena_data.in_celebration then
-            str = "Finishing"
-        end
-        if arena_data.enabled == false then
-            str = "Disabled"
-        end
-        local entry = arena_data.name .. "     " .. arena_data.players_inside .. "/" .. arena_data.max_players .. "     " .. str
-        table.insert(listelems,entry)
-    end
-    local tree = {
-        { type = "size", w = 10.5, h = 11, fixed_size = false },
-        { type = "image", x = 0, y = 0, w = 10.5, h = 2.6, texture_name = "stent_game_header.png" },
-        { type = "button", x = 0, y = 3, w = 10.5, h = 0.8, name = "btn1", label = "Available Arenas" },
-        { type = "textlist",
-            x = 0, y = 3.8, w = 10.5, h = 3,
-            name = "textlist1",
-            listelems = listelems,
-            selected_idx = 1,
-            transparent = true},
-        { type = "button", x = .3, y = 7.2, w = 3.1, h = 0.8, name = "join", label = "Join Queue" },
-        { type = "button", x = 3.7, y = 7.2, w = 3.3, h = 0.8, name = "leave", label = "Leave Queue" },
-        { type = "button", x = 7.1, y = 7.2, w = 3.1, h = 0.8, name = "spectate", label = "Spectate" },
-    }
-    return tree
-end
-
-function stent.build_mainmenu_formspec(p_name, arenas_data)
-    local tree = fs_tree_creator(arenas_data)
-
 end
 
 
@@ -203,19 +177,20 @@ local function set_main_menu(p_name)
     old_inventory_formspecs[p_name] = player:get_inventory_formspec()
     if player then 
         local fs = stent.build_mainmenu_formspec(p_name,stent.saved_arenas_data)
-        player:set_inventory_formspec(fs) 
+        player:set_inventory_formspec(fs)
         minetest.show_formspec(p_name, "", fs)
     end
 end
+
 local function unset_main_menu(p_name) 
     minetest.close_formspec(p_name, "")
-    local player = minetest.get_player_name(p_name)
+    local player = minetest.get_player_by_name(p_name)
     if player then
         player:set_inventory_formspec(old_inventory_formspecs[p_name])
     end
 end
 
-arena_lib.register_on_load(function(mod, arena) 
+arena_lib.register_on_load(function(mod, arena)
     for p_name, data in pairs(arena.players) do
         unset_main_menu(p_name)
     end
@@ -231,40 +206,14 @@ arena_lib.register_on_quit(function(mod, arena, p_name, is_spectator, reason)
     set_main_menu(p_name)
 end)
 
--- joinplayer is special. If it is the first joinplayer, then we will place the
--- schematic. We also set the player at the spawn location, attach them to the
--- slowly-spinning entity, and then do main menu stuff.
 
 minetest.register_on_joinplayer(function(player, last_login)
-    do_first_join_setup()
-
     local p_name = player:get_player_name() 
-
     player:set_pos(stent.start_location)
-    player:set_attach()
     set_main_menu(p_name)
 end)
 
 
--- spawn-attachment entity
-minetest.register_entity("stent:spawnent",{
-    initial_properties = {
-        visual = "sprite",
-        physical = false,
-        hp_max = 32,
-        textures = {"blank.png"},
-        collisionbox = {-.1,-.1,-.1,.1,.1,.1},
-        automatic_rotate = .26,
-    },
-    _timer = 0,
-    on_step = function(self,dtime)
-        self._timer = self._timer + dtime
-        if self._timer >= 10 then
-            local children = self.object:get_children() or {}
-            if #children == 0 then
-                self.object:remove()
-            end
-        end
-    end,
-})
-
+minetest.register_on_mods_loaded(function()
+    stent.refresh_formspecs()
+end)
