@@ -21,7 +21,7 @@ end
 ---@param arena_name string
 function stent.create_arena(mod_name, arena_name)
     arena_lib.create_arena("", mod_name, arena_name)
-    arena_lib.set_entrance_type("", mod_name, arena_name, "formspec_entrace")
+    arena_lib.set_entrance_type("", mod_name, arena_name, "formspec_entrance")
     arena_lib.set_entrance("", mod_name, arena_name, "add")
 end
 
@@ -74,9 +74,9 @@ end
 
 -- Arena lib entrance registration
 
-arena_lib.register_entrance_type("stent", "formspec_entrace", {
+arena_lib.register_entrance_type("stent", "formspec_entrance", {
     -- (string) the name of the entrance. Contrary to the previous entrance field, this can be translated
-    name = "formspec_entrace",
+    name = "formspec_entrance",
     -- must return the value that will be used by arena_lib to identify the
     -- entrance. For instance, built-in signs return their position. If nothing
     -- is returned, the adding process will be aborted. Substitute ... with any
@@ -175,7 +175,7 @@ function stent.refresh_formspecs()
     for modname, moddata in pairs(arena_lib.mods) do
         local arenas = moddata.arenas
         for arena_id, arena in pairs(arenas) do
-            if arena.entrance_type == "formspec_entrace" then
+            if arena.entrance_type == "formspec_entrance" then
                 table.insert(arenas_data, {
                     name = arena.name,
                     mod = modname,
