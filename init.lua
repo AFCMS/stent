@@ -167,6 +167,9 @@ function stent.build_mainmenu_formspec(p_name, arenas_data)
     return ""
 end
 
+local is_loading = true
+minetest.after(0,function() is_loading = false end)
+
 function stent.refresh_formspecs()
     -- first, get the data needed to refresh the formspecs
 
@@ -195,13 +198,15 @@ function stent.refresh_formspecs()
     -- save this so if new players join we dont have to refresh everyone's formspecs
     stent.saved_arenas_data = arenas_data
 
-    -- next, call the function to build the formspec, passing the data
-    for _, player in pairs(minetest.get_connected_players()) do
-        local p_name = player:get_player_name()
-        if not (arena_lib.is_player_in_arena(p_name)) then
-            local fs = stent.build_mainmenu_formspec(p_name, arenas_data)
-            player:set_inventory_formspec(fs)
-            minetest.show_formspec(p_name, "", fs)
+    if not(is_loading) then
+        -- next, call the function to build the formspec, passing the data
+        for _, player in pairs(minetest.get_connected_players()) do
+            local p_name = player:get_player_name()
+            if not (arena_lib.is_player_in_arena(p_name)) then
+                local fs = stent.build_mainmenu_formspec(p_name, arenas_data)
+                player:set_inventory_formspec(fs)
+                minetest.show_formspec(p_name, "", fs)
+            end
         end
     end
 end
