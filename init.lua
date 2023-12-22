@@ -183,7 +183,7 @@ function stent.refresh_formspecs()
                     name = arena.name,
                     mod = modname,
                     icon = moddata.icon,
-                    players_inside = #arena.players,
+                    players_inside = arena.players_amount,
                     max_players = arena.max_players,
                     in_queue = arena.in_queue,
                     in_loading = arena.in_loading,
