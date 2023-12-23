@@ -2,7 +2,7 @@
     "type": "MOD",
     "title": "Stent",
     "name": "stent",
-    "short_description": "A library to allow making a standalone entrance in an arena_lib minigame",
+    "short_description": "A formspec based arena entrance type for arena_lib",
     "dev_state": "MAINTENANCE_ONLY",
     "tags": [
         "library"
