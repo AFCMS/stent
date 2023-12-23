@@ -3,26 +3,29 @@
 > [!NOTE]
 > Code has been build by [MisterE123](https://github.com/MisterE123) to help me with the [2023 Minetest Game Jam](https://jam.minetest.net)
 
-Adds a new arena entrance for arena_lib that can be implemented in a formspec. 
+Adds a new arena entrance for arena_lib that can be implemented in a formspec.
 
 An example main menu is included.
 
-# How to use: 
+Typing annotations for [LuaLS](https://luals.github.io) are included in the code (doesn't rely on any Minetest specific headers).
 
-## 1. Create a map using modgen. 
+# How to use:
+
+## 1. Create a map using modgen.
 
 Use modgen: https://content.minetest.net/packages/BuckarooBanzay/modgen/
 to create a map that loads in the game.
 
 To do that, load up a minetest world with `singlenode` mapgen and:
+
 - a mod that adds the nodes for your game
 - worldedit
 - the modgen mod
 
-Then, build a spawn location and arenas in the world at the places you want those arenas to appear in the game. Write down the coordinates of: 
+Then, build a spawn location and arenas in the world at the places you want those arenas to appear in the game. Write down the coordinates of:
 
 - the spawn location
-and for each arena,
+  and for each arena,
 - player spawner locations for when a player starts the match (exactly the number of max_players for each arena, and double that if there are teams)
 - arena pos1 and pos2 which define arena bounds, if applicable
 - any other positions your specific minigame requires
@@ -45,12 +48,11 @@ Next, we will create your setup mod:
 
 Override stent.spawn_location.
 
-Example: 
+Example:
 
-```lua 
+```lua
 stent.start_location = vector.new(7,-10,0)
 ```
-
 
 ## 2. Create, and setup arenas in on_mods_loaded
 
@@ -60,6 +62,7 @@ To create an arena:
 `stent.create_arena(mod_name, arena_name)`
 
 Example:
+
 ```lua
 stent.create_arena("balloon_bop", "redBox", min_players, max_players, pos1, pos2)
 ```
@@ -67,26 +70,27 @@ stent.create_arena("balloon_bop", "redBox", min_players, max_players, pos1, pos2
 To set the properties of that arena:
 `stent.set_arena_props(mod_name, arena_name, props)`
 
-`props` is a table with the properties to set. 
+`props` is a table with the properties to set.
 
 `props.pos1` and `props.pos2` are the arena boundary positions. Define them if applicable.
-`props.min_players` and `props.max_players` are required. Set both to `1` if this is a single-player only minigame. 
+`props.min_players` and `props.max_players` are required. Set both to `1` if this is a single-player only minigame.
 
 `props.spawnpoints` are required, and should be the number of `max_players`. Example:
+
 ```lua
 props.spawn_points = {
     vector.new(69,-7,1),
     vector.new(72,-7,0),
 },
-``` 
+```
+
 Include any other properties your minigame requires.
 
 You can also choose to set weather and lighting:
 `props.weather_condition`: arena_lib weather particles table; see the documentation for `particles` in:
 https://gitlab.com/zughy-friends-minetest/arena_lib/-/blob/master/DOCS.md?ref_type=heads#22210-weather
-`props.lighting`: arena_lib lighting table; see the documentation for `light_table` in: 
+`props.lighting`: arena_lib lighting table; see the documentation for `light_table` in:
 https://gitlab.com/zughy-friends-minetest/arena_lib/-/blob/master/DOCS.md?ref_type=heads#22210-weather
-
 
 Example:
 
@@ -109,7 +113,6 @@ stent.set_arena_props("balloon_bop", "redBox", {
     arena_radius = 15,
 })
 ```
-
 
 Putting it all together Example:
 
@@ -147,26 +150,27 @@ end)
 
 Override `stent.build_mainmenu_formspec(p_name, arenas_data)` to make your custom main menu.
 
- `p_name` is the player who views the main menu.
+`p_name` is the player who views the main menu.
 
 `arenas_data` is a table containing arena data tables with the following attributes:
 
 It must return the formspec string.
 
-    ```lua
-    {
-        name = arena.name,
-        mod = modname,
-        icon = moddata.icon,
-        players_inside = #arena.players,
-        max_players = arena.max_players,
-        in_queue = arena.in_queue,
-        in_loading = arena.in_loading,
-        in_game = arena.in_game,
-        in_celebration = arena.in_celebration,
-        enabled = arena.enabled,
-    }
-    ```
+```lua
+{
+    name = arena.name,
+    mod = modname,
+    icon = moddata.icon,
+    players_inside = #arena.players,
+    max_players = arena.max_players,
+    in_queue = arena.in_queue,
+    in_loading = arena.in_loading,
+    in_game = arena.in_game,
+    in_celebration = arena.in_celebration,
+    enabled = arena.enabled,
+}
+```
+
 You can use this to create a main menu.
 
 See the example usage below.
@@ -177,7 +181,7 @@ The main menu is the inventory formspec, but can also be sent by the mod, so the
 
 The main menu needs to list all arenas included in arenas_data, and provide a button that allows to join an arena. Call `arena_lib.join_queue(mod, arena, p_name)` when the player presses the appropriate button, and `arena_lib.remove_player_from_queue(p_name)` to make them leave any queue.
 
-## Example usage: 
+## Example usage:
 
 mod.conf >
 
