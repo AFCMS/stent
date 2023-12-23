@@ -6,9 +6,9 @@
 > [!NOTE]
 > Code has been build by [MisterE123](https://github.com/MisterE123) to help me with the [2023 Minetest Game Jam](https://jam.minetest.net)
 
-Adds a new arena entrance for arena_lib that can be implemented in a formspec.
+A formspec based arena entrance type for arena_lib.
 
-An example main menu is included.
+An example menu is included.
 
 Typing annotations for [LuaLS](https://luals.github.io) are included in the code (doesn't rely on any Minetest specific headers).
 
