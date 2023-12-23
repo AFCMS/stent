@@ -1,5 +1,8 @@
 # Stent
 
+[![ContentDB](https://content.minetest.net/packages/AFCM/stent/shields/title/)](https://content.minetest.net/packages/AFCM/stent/)
+[![ContentDB](https://content.minetest.net/packages/AFCM/stent/shields/downloads/)](https://content.minetest.net/packages/AFCM/stent/)
+
 > [!NOTE]
 > Code has been build by [MisterE123](https://github.com/MisterE123) to help me with the [2023 Minetest Game Jam](https://jam.minetest.net)
 
